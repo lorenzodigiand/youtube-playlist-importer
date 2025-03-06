@@ -18,7 +18,7 @@ def authenticate_youtube():
     youtube = googleapiclient.discovery.build("youtube", "v3", credentials=credentials)
     return youtube
 
-def create_playlist(youtube, title="Spotify Import", description="Playlist importata da CSV"):
+def create_playlist(youtube, title="Spotify Import", description="Playlist imported from CSV"):
     request = youtube.playlists().insert(
         part="snippet,status",
         body={
@@ -44,13 +44,13 @@ def search_video(youtube, query):
         maxResults=1
     )
     response = request.execute()
-    time.sleep(1)  # Ritardo di 1 secondo per evitare superamento della quota
+    time.sleep(1)  # Delay of 1 second to circumvent the surpassing of the daily quota
     if "items" in response and len(response["items"]) > 0:
         return response["items"][0]["id"]["videoId"]
     return None
 
 def check_video_in_playlist(youtube, playlist_id, video_id):
-    # Controlla se il video è già nella playlist
+    # Check if the video is already in the playlist
     request = youtube.playlistItems().list(
         part="snippet",
         playlistId=playlist_id
@@ -65,12 +65,12 @@ def add_video_to_playlist(youtube, playlist_id, video_id):
     retries = 5
     for attempt in range(retries):
         try:
-            # Verifica se il video è già presente nella playlist
+            # Verify if the video is already in the playlist
             if check_video_in_playlist(youtube, playlist_id, video_id):
-                print(f"❌ Video già presente nella playlist: {video_id}")
+                print(f"❌ Track is already in the playlist: {video_id}")
                 return
 
-            # Se il video non è nella playlist, aggiungilo
+            # If the video is not found in the playlist, add it
             request = youtube.playlistItems().insert(
                 part="snippet",
                 body={
@@ -84,33 +84,33 @@ def add_video_to_playlist(youtube, playlist_id, video_id):
                 }
             )
             request.execute()
-            print(f"✅ Video aggiunto con successo: {video_id}")
-            break  # Esci dal ciclo se l'operazione ha successo
+            print(f"✅ Track added successfully: {video_id}")
+            break  # Exit from the loop if the operation was successful
         except HttpError as e:
             if e.resp.status == 409:
-                print(f"❌ Errore 409, tentativo {attempt + 1} di {retries}. Riprovo...")
-                time.sleep(5)  # Attendi 5 secondi prima di riprovare
+                print(f"❌ Error 409, attempt number {attempt + 1} of {retries}. Trying again...")
+                time.sleep(5)  # Wait 5 seconds before trying again
             else:
-                print(f"❌ Errore imprevisto: {e}")
-                break  # Se è un altro errore, interrompi il ciclo
+                print(f"❌ Unexpected error: {e}")
+                break  # If it's another error, exit from the loop
 
 def main():
-    # Carica il CSV
+    # Load CSV file
     df = pd.read_csv("playlist.csv")
     
-    # Controlla che le colonne esistano
+    # Check if the columns exist
     if not all(col in df.columns for col in ["Track name", "Artist name", "Album"]):
-        print("❌ Errore: Il CSV deve contenere le colonne 'Track name', 'Artist name', 'Album'")
+        print("❌ Error: CSV must contain the columns 'Track name', 'Artist name', 'Album'")
         return
     
-    # Autenticazione con YouTube
+    # YouTube authentication
     youtube = authenticate_youtube()
-    
-    # Crea una nuova playlist
+
+    # Create a new playlist
     playlist_id = create_playlist(youtube)
-    print(f"✅ Playlist creata con successo: https://www.youtube.com/playlist?list={playlist_id}")
+    print(f"✅ Playlist created successfully: https://www.youtube.com/playlist?list={playlist_id}")
     
-    # Itera sulle canzoni e aggiungile alla playlist
+    # Cycle on the tracks and adds them to the playlist
     for index, row in df.iterrows():
         track = row["Track name"]
         artist = row["Artist name"]
@@ -119,14 +119,14 @@ def main():
         video_id = search_video(youtube, query)
         if video_id:
             add_video_to_playlist(youtube, playlist_id, video_id)
-            print(f"✅ Aggiunto: {track} - {artist}")
+            print(f"✅ Added: {track} - {artist}")
         else:
-            print(f"❌ Non trovato: {track} - {artist}")
+            print(f"❌ Not found: {track} - {artist}")
         
-        # Ritardo tra le richieste per evitare di superare la quota
+        # Delay between requests to circumvent the surpassing of the daily quota
         time.sleep(1)
     
-    print("🎵 Importazione completata!")
+    print("🎵 Import completed!")
 
 if __name__ == "__main__":
     main()
