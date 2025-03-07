@@ -1,6 +1,6 @@
 # YouTube Playlist Importer
 
-This script was created to import music playlists from any music streaming services to YouTube Music, there are already some sites which accomplish the same task but I wanted to make a free alternative since all of them have some limitations<br>
+This script was created to import music playlists from any music streaming services to YouTube Music, there are already some sites which accomplish the same task but I wanted to make a free alternative since all of them have some limitations.<br>
 To run this script you'll need Python installed on your machine, a CSV file containing all your songs and a client_secret.json file as your credentials.
 
 ## Quick Start
