@@ -38,3 +38,4 @@ After logging in with the same account you used for your Google Cloud project pr
 After connecting successfully we'll be prompted to close our browser windows, meanwhile the script will start finding our songs and will put them in a new playlist on YouTube<br>
 ### The Downsides
 Unfortunately due to the limitations of a free project on the Google Cloud Platform there is a certain limit of actions our scrpit can do using YouTube Data APIs, after reaching the quota of 10.000 actions per day the script will stop and we won't be able to use it until the next day, to circumvent this limit we'll be forced to modify our CSV file every day checking at which song the script stopped and continuing the next day from that point forward.
+Of course this project is far from over and if you want to contribute in any shape or form feel free to do so.
